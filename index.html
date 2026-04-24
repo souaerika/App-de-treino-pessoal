@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MeuTreino">
+<title>MeuTreino</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #c8f135;
+  --accent-dim: rgba(200,241,53,0.12);
+  --accent-border: rgba(200,241,53,0.3);
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: #272727;
+  --text: #f0f0f0;
+  --muted: #5a5a5a;
+  --danger: #ff5555;
+  --r: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overscroll-behavior: none; }
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 16px 12px; position: sticky; top: 0; z-index: 200; }
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: var(--accent); }
+.today-pill { background: var(--accent); color: var(--bg); font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex-shrink: 0; border: 1.5px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 12px; font-weight: 700; padding: 7px 16px; border-radius: 30px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.main { padding: 18px 14px 40px; }
+.day-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.day-icon { width: 48px; height: 48px; background: var(--accent-dim); border: 1.5px solid var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.day-title { font-weight: 800; font-size: 17px; }
+.day-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.complete-banner { display: none; background: var(--accent); color: var(--bg); border-radius: var(--r); padding: 16px; text-align: center; margin-bottom: 16px; animation: pop 0.3s ease; }
+.complete-banner.show { display: block; }
+.complete-banner h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; }
+.complete-banner p { font-size: 12px; margin-top: 4px; }
+@keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.progress-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin-bottom: 14px; }
+.progress-top { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.progress-label { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.progress-count { font-size: 13px; font-weight: 700; color: var(--accent); }
+.progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.note { background: var(--surface); border-left: 3px solid var(--accent); border-radius: var(--r); padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.note strong { color: var(--accent); }
+.ex-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r); margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s, opacity 0.2s; }
+.ex-card.done { border-color: var(--accent); opacity: 0.65; }
+.ex-header { display: flex; align-items: center; gap: 10px; padding: 13px 12px 11px; }
+.ex-check { width: 27px; height: 27px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; color: transparent; }
+.ex-card.done .ex-check { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.ex-body { flex: 1; cursor: pointer; min-width: 0; }
+.ex-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-card.done .ex-name { text-decoration: line-through; color: var(--muted); }
+.ex-tags { display: flex; gap: 4px; margin-top: 5px; }
+.ex-tag { background: var(--surface2); border-radius: 4px; padding: 2px 7px; font-size: 11px; color: var(--muted); }
+.ex-info-btn { background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 8px; color: var(--accent); font-size: 11px; font-weight: 700; padding: 6px 9px; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; white-space: nowrap; }
+.ex-arrow { color: var(--muted); font-size: 20px; cursor: pointer; flex-shrink: 0; transition: transform 0.2s; padding: 0 2px; }
+.ex-card.open .ex-arrow { transform: rotate(90deg); }
+.sets-panel { display: none; border-top: 1px solid var(--border); background: var(--surface2); padding: 14px; }
+.ex-card.open .sets-panel { display: block; }
+.sets-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+.set-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; transition: border-color 0.2s; }
+.set-row.set-done { border-color: var(--accent); }
+.set-num { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--muted); width: 22px; flex-shrink: 0; line-height: 1; }
+.set-row.set-done .set-num { color: var(--accent); }
+.set-inputs { display: flex; gap: 8px; flex: 1; }
+.set-field { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.set-field label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.set-field input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 8px; width: 100%; text-align: center; outline: none; transition: border-color 0.2s; -moz-appearance: textfield; }
+.set-field input::-webkit-outer-spin-button, .set-field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.set-field input:focus { border-color: var(--accent); }
+.set-done-btn { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.set-row.set-done .set-done-btn { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.cardio-card { background: linear-gradient(135deg, #141f02, var(--surface)); border: 1.5px solid var(--accent-border); border-radius: var(--r); padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+.cardio-card.done { border-color: var(--accent); opacity: 0.65; }
+.cardio-icon { font-size: 30px; flex-shrink: 0; }
+.cardio-info h3 { font-size: 15px; font-weight: 700; }
+.cardio-info p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.cardio-check { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: transparent; transition: all 0.2s; flex-shrink: 0; }
+.cardio-card.done .cardio-check { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.reset-btn { width: 100%; padding: 13px; background: transparent; border: 1.5px solid var(--border); border-radius: var(--r); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: all 0.2s; }
+.reset-btn:active { background: var(--surface2); }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 500; flex-direction: column; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.modal-header { padding: 16px 16px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+.modal-title { font-size: 16px; font-weight: 800; line-height: 1.3; flex: 1; }
+.modal-close { width: 34px; height: 34px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--accent); }
+.modal-tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.modal-tabs::-webkit-scrollbar { display: none; }
+.modal-tab { flex-shrink: 0; background: var(--surface2); border: 1.5px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.modal-tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.modal-body { flex: 1; overflow-y: auto; padding: 18px 16px; }
+.loading-state { text-align: center; padding: 60px 20px; }
+.loading-icon { font-size: 36px; margin-bottom: 14px; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.loading-text { font-size: 13px; color: var(--muted); }
+.section-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+.step-row { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.step-text { font-size: 13px; line-height: 1.6; flex: 1; color: var(--text); }
+.bullet-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+.bullet-dot { font-size: 16px; line-height: 1.3; flex-shrink: 0; }
+.bullet-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+.section-gap { margin-bottom: 22px; }
+.ex-image-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 18px; background: var(--surface2); position: relative; }
+.ex-image { width: 100%; height: 200px; object-fit: cover; display: block; }
+.ex-image-placeholder { width: 100%; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.ex-image-placeholder span { font-size: 36px; }
+.pro-tip { background: linear-gradient(135deg, #161f02, var(--surface)); border: 1.5px solid var(--accent-border); border-radius: 12px; padding: 14px 16px; margin-top: 6px; }
+.pro-tip-label { font-size: 10px; font-weight: 800; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 7px; }
+.pro-tip-text { font-size: 13px; line-height: 1.6; color: var(--text); }
+.alt-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; margin-bottom: 9px; }
+.alt-name { font-weight: 700; font-size: 14px; }
+.alt-reason { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.yt-btn { display: flex; width: 100%; padding: 16px; background: #ff0000; border: none; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; align-items: center; justify-content: center; gap: 10px; font-family: 'DM Sans', sans-serif; text-decoration: none; margin-bottom: 14px; }
+.yt-query { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; }
+.yt-query span { color: var(--accent); }
+.video-tip { background: var(--surface2); border-radius: 12px; padding: 14px; margin-top: 16px; }
+.video-tip-title { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.video-tip-list { list-style: none; }
+.video-tip-list li { font-size: 12px; color: var(--muted); line-height: 1.6; padding: 4px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+.video-tip-list li:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div class="logo">MeuTreino</div>
+    <div class="today-pill">HOJE</div>
+  </div>
+  <div class="tabs" id="tabsContainer"></div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-top">
+        <div class="modal-title" id="modalTitle"></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-chips" id="modalChips"></div>
+      <div class="modal-tabs" id="modalTabs"></div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const WORKOUTS = {
+  A: {
+    label: "DIA A", name: "Pernas", emoji: "🦵", schedule: "Seg · Qui",
+    exercises: [
+      { name: "Leg Press 45°", sets: 4, reps: "6–10" },
+      { name: "Hack Squat máquina", sets: 3, reps: "8–10" },
+      { name: "Cadeira Extensora", sets: 3, reps: "10–12" },
+      { name: "Cadeira Flexora", sets: 3, reps: "10–12" },
+      { name: "Cadeira Abdutora", sets: 3, reps: "12–15" },
+      { name: "Cadeira Adutora", sets: 3, reps: "12–15" },
+      { name: "Elevação Pélvica máquina", sets: 3, reps: "10–12" },
+      { name: "Panturrilha (leg press ou máquina)", sets: 3, reps: "12–15" },
+    ]
+  },
+  B: {
+    label: "DIA B", name: "Peito + Costas", emoji: "💪", schedule: "Ter · Sex",
+    exercises: [
+      { name: "Supino Reto máquina", sets: 4, reps: "6–10" },
+      { name: "Supino Inclinado máquina / Smith", sets: 3, reps: "8–10" },
+      { name: "Crucifixo máquina", sets: 3, reps: "10–12" },
+      { name: "Puxada Aberta pronada", sets: 4, reps: "6–10" },
+      { name: "Remada Cavalinho barra", sets: 3, reps: "8–10" },
+      { name: "Remada Baixa polia", sets: 3, reps: "10–12" },
+      { name: "Crucifixo Invertido máquina", sets: 3, reps: "12–15" },
+    ]
+  },
+  C: {
+    label: "DIA C", name: "Ombros + Braços + Core", emoji: "🏋️", schedule: "Qua",
+    exercises: [
+      { name: "Desenvolvimento barra", sets: 3, reps: "8–10" },
+      { name: "Elevação Lateral polia", sets: 3, reps: "12–15" },
+      { name: "Rosca Scott máquina ou polia", sets: 3, reps: "8–10" },
+      { name: "Rosca Direta barra", sets: 3, reps: "10–12" },
+      { name: "Tríceps polia", sets: 3, reps: "8–10" },
+      { name: "Tríceps Testa barra EZ", sets: 3, reps: "10–12" },
+      { name: "Abdominal máquina", sets: 3, reps: "12–15" },
+      { name: "Abdominal polia (cabo + corda)", sets: 3, reps: "12–15" },
+    ]
+  }
+};
+
+const EXERCISE_IMAGES = {
+  "Leg Press 45°": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Leg_press.jpg/640px-Leg_press.jpg",
+  "Cadeira Extensora": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Leg_extension.jpg/480px-Leg_extension.jpg",
+  "Cadeira Flexora": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Leg_curl.jpg/480px-Leg_curl.jpg",
+  "Puxada Aberta pronada": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Lat_pulldown.jpg/480px-Lat_pulldown.jpg",
+  "Supino Reto máquina": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Bench_press.jpg/480px-Bench_press.jpg",
+};
+
+let currentDay = 'A';
+let state = {};
+let modalData = null;
+let modalTab = 'guide';
+let aiCache = {};
+
+function initDay(day) {
+  return {
+    exercises: WORKOUTS[day].exercises.map(ex => ({
+      done: false, open: false,
+      sets: Array.from({ length: ex.sets }, () => ({ reps: '', weight: '', done: false }))
+    })),
+    cardio: false
+  };
+}
+
+function getDay(day) {
+  if (!state[day]) state[day] = initDay(day);
+  return state[day];
+}
+
+function saveState() {
+  try { localStorage.setItem('mt_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('mt_state');
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+}
+
+function render() { renderTabs(); renderMain(); }
+
+function renderTabs() {
+  const container = document.getElementById('tabsContainer');
+  container.innerHTML = '';
+  Object.entries(WORKOUTS).forEach(([key, w]) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (key === currentDay ? ' active' : '');
+    btn.textContent = `${w.label} — ${w.name}`;
+    btn.onclick = () => { currentDay = key; render(); };
+    container.appendChild(btn);
+  });
+}
+
+function renderMain() {
+  const day = currentDay;
+  const workout = WORKOUTS[day];
+  const ds = getDay(day);
+  const total = workout.exercises.length + 1;
+  const done = ds.exercises.filter(e => e.done).length + (ds.cardio ? 1 : 0);
+  const pct = Math.round((done / total) * 100);
+
+  let html = `
+    <div class="day-header">
+      <div class="day-icon">${workout.emoji}</div>
+      <div>
+        <div class="day-title">${workout.label} — ${workout.name}</div>
+        <div class="day-sub">${workout.schedule} · ${workout.exercises.length} exercícios + cardio</div>
+      </div>
+    </div>
+    <div class="complete-banner ${pct === 100 ? 'show' : ''}">
+      <h3>🎉 TREINO CONCLUÍDO!</h3>
+      <p>Mandou muito bem hoje. Descansa e volta mais forte.</p>
+    </div>
+    <div class="progress-card">
+      <div class="progress-top">
+        <span class="progress-label">Progresso</span>
+        <span class="progress-count">${done}/${total}</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>
+    <div class="note"><strong>Progressão:</strong> Ao bater o teto das reps em todas as séries → sobe a carga e volta ao mínimo.</div>`;
+
+  workout.exercises.forEach((ex, i) => {
+    const es = ds.exercises[i];
+    let setsHtml = '';
+    es.sets.forEach((s, si) => {
+      setsHtml += `
+        <div class="set-row ${s.done ? 'set-done' : ''}">
+          <div class="set-num">${si+1}</div>
+          <div class="set-inputs">
+            <div class="set-field">
+              <label>Carga (kg)</label>
+              <input type="number" inputmode="decimal" placeholder="—" value="${s.weight}" onchange="updateSet('${day}',${i},${si},'weight',this.value)">
+            </div>
+            <div class="set-field">
+              <label>Reps</label>
+              <input type="number" inputmode="numeric" placeholder="${ex.reps.split('–')[0]}" value="${s.reps}" onchange="updateSet('${day}',${i},${si},'reps',this.value)">
+            </div>
+          </div>
+          <button class="set-done-btn" onclick="toggleSet('${day}',${i},${si})">${s.done ? '✓' : '○'}</button>
+        </div>`;
+    });
+    html += `
+      <div class="ex-card ${es.done?'done':''} ${es.open?'open':''}" id="excard-${day}-${i}">
+        <div class="ex-header">
+          <div class="ex-check" onclick="toggleExDone('${day}',${i})">✓</div>
+          <div class="ex-body" onclick="toggleExOpen('${day}',${i})">
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-tags">
+              <span class="ex-tag">${ex.sets} séries</span>
+              <span class="ex-tag">${ex.reps} reps</span>
+            </div>
+          </div>
+          <button class="ex-info-btn" onclick="openModal('${day}',${i})">ℹ️ Info</button>
+          <div class="ex-arrow" onclick="toggleExOpen('${day}',${i})">›</div>
+        </div>
+        <div class="sets-panel">
+          <div class="sets-label">Séries</div>
+          ${setsHtml}
+        </div>
+      </div>`;
+  });
+
+  html += `
+    <div class="cardio-card ${ds.cardio?'done':''}" onclick="toggleCardio('${day}')">
+      <div class="cardio-icon">🏃</div>
+      <div class="cardio-info">
+        <h3>Cardio pós-treino</h3>
+        <p>15–20 min · Esteira ou bicicleta · Intensidade moderada-alta</p>
+      </div>
+      <div class="cardio-check">✓</div>
+    </div>
+    <button class="reset-btn" onclick="resetDay('${day}')">🗑 Resetar treino do dia</button>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function toggleExOpen(day,i){ getDay(day).exercises[i].open=!getDay(day).exercises[i].open; saveState(); render(); }
+function toggleExDone(day,i){ const ds=getDay(day); ds.exercises[i].done=!ds.exercises[i].done; ds.exercises[i].sets.forEach(s=>s.done=ds.exercises[i].done); saveState(); render(); }
+function updateSet(day,exIdx,setIdx,field,value){ getDay(day).exercises[exIdx].sets[setIdx][field]=value; saveState(); }
+function toggleSet(day,exIdx,setIdx){ const ds=getDay(day); ds.exercises[exIdx].sets[setIdx].done=!ds.exercises[exIdx].sets[setIdx].done; ds.exercises[exIdx].done=ds.exercises[exIdx].sets.every(s=>s.done); saveState(); render(); }
+function toggleCardio(day){ getDay(day).cardio=!getDay(day).cardio; saveState(); render(); }
+function resetDay(day){ if(!confirm('Resetar todo o progresso de hoje?')) return; delete state[day]; saveState(); render(); }
+
+const MODAL_TABS=[{id:'guide',icon:'📋',label:'Execução'},{id:'setup',icon:'⚙️',label:'Ajustes'},{id:'video',icon:'▶️',label:'Vídeo'},{id:'alt',icon:'🔄',label:'Alternativas'}];
+
+function openModal(day,i){
+  const ex=WORKOUTS[day].exercises[i];
+  modalData={ex,day,i}; modalTab='guide';
+  document.getElementById('modalTitle').textContent=ex.name;
+  document.getElementById('modalChips').innerHTML='';
+  renderModalTabs();
+  document.getElementById('modalOverlay').classList.add('open');
+  fetchExerciseInfo(ex.name);
+}
+
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); modalData=null; }
+
+function renderModalTabs(){
+  const c=document.getElementById('modalTabs'); c.innerHTML='';
+  MODAL_TABS.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='modal-tab'+(t.id===modalTab?' active':'');
+    btn.innerHTML=`${t.icon} ${t.label}`;
+    btn.onclick=()=>{ modalTab=t.id; renderModalTabs(); renderModalBody(); };
+    c.appendChild(btn);
+  });
+}
+
+async function fetchExerciseInfo(exName){
+  if(aiCache[exName]){ updateModalChips(aiCache[exName]); renderModalBody(); return; }
+  document.getElementById('modalBody').innerHTML=`<div class="loading-state"><div class="loading-icon">⚡</div><div class="loading-text">Carregando com IA...</div></div>`;
+  document.getElementById('modalChips').innerHTML='';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1200,
+        messages:[{role:'user',content:`Você é personal trainer. Para o exercício "${exName}", responda SOMENTE JSON sem markdown: {"musculo_principal":"...","musculo_secundario":"...","execucao":["...","...","...","...","..."],"erros_comuns":["...","...","..."],"ajuste_maquina":["...","...","...","..."],"posicao_corpo":["...","...","..."],"alternativas":[{"nome":"...","motivo":"..."},{"nome":"...","motivo":"..."},{"nome":"...","motivo":"..."}],"dica_pro":"...","youtube_query":"..."}`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('');
+    const info=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    aiCache[exName]=info;
+    updateModalChips(info);
+    renderModalBody();
+  }catch(e){
+    document.getElementById('modalBody').innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">Erro ao carregar. Verifique sua conexão.</div>`;
+  }
+}
+
+function updateModalChips(info){
+  document.getElementById('modalChips').innerHTML=`<span class="chip">🎯 ${info.musculo_principal}</span><span class="chip">+ ${info.musculo_secundario}</span>`;
+}
+
+function renderModalBody(){
+  if(!modalData) return;
+  const exName=modalData.ex.name;
+  const info=aiCache[exName];
+  if(!info) return;
+  const body=document.getElementById('modalBody');
+  const imageUrl=EXERCISE_IMAGES[exName];
+
+  if(modalTab==='guide'){
+    const imgHtml=imageUrl
+      ?`<div class="ex-image-wrap"><img class="ex-image" src="${imageUrl}" alt="${exName}" onerror="this.parentElement.innerHTML='<div class=ex-image-placeholder><span>🏋️</span>Imagem não disponível</div>'"></div>`
+      :`<div class="ex-image-wrap"><div class="ex-image-placeholder"><span>🏋️</span>Imagem ilustrativa não disponível</div></div>`;
+    body.innerHTML=`${imgHtml}
+      <div class="section-gap">
+        <div class="section-title">Passo a passo</div>
+        ${info.execucao.map((s,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('')}
+      </div>
+      <div class="section-gap">
+        <div class="section-title">⚠️ Erros comuns</div>
+        ${info.erros_comuns.map(e=>`<div class="bullet-row"><span class="bullet-dot" style="color:#ff5555">✗</span><span class="bullet-text">${e}</span></div>`).join('')}
+      </div>
+      <div class="pro-tip">
+        <div class="pro-tip-label">💡 Dica pro</div>
+        <div class="pro-tip-text">${info.dica_pro}</div>
+      </div>`;
+  } else if(modalTab==='setup'){
+    body.innerHTML=`
+      <div class="section-gap">
+        <div class="section-title">⚙️ Como ajustar a máquina</div>
+        ${info.ajuste_maquina.map((a,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div class="step-text">${a}</div></div>`).join('')}
+      </div>
+      <div class="section-gap">
+        <div class="section-title">🧍 Posição do corpo</div>
+        ${info.posicao_corpo.map(p=>`<div class="bullet-row"><span class="bullet-dot" style="color:var(--accent)">→</span><span class="bullet-text">${p}</span></div>`).join('')}
+      </div>`;
+  } else if(modalTab==='video'){
+    const ytUrl=`https://www.youtube.com/results?search_query=${encodeURIComponent(info.youtube_query)}`;
+    body.innerHTML=`
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:56px;margin-bottom:16px">▶️</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">${exName}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.6">Toque para buscar vídeos de execução no YouTube</div>
+        <a href="${ytUrl}" target="_blank" class="yt-btn">▶ &nbsp;Buscar no YouTube</a>
+        <div class="yt-query">Busca por: <span>"${info.youtube_query}"</span></div>
+      </div>
+      <div class="video-tip">
+        <div class="video-tip-title">🎯 O que observar no vídeo</div>
+        <ul class="video-tip-list">
+          <li><span>→</span>Posição da coluna durante o movimento</li>
+          <li><span>→</span>Amplitude completa do exercício</li>
+          <li><span>→</span>Controle na fase excêntrica (descida)</li>
+          <li><span>→</span>Ignore vídeos com carga excessiva e execução solta</li>
+        </ul>
+      </div>`;
+  } else if(modalTab==='alt'){
+    body.innerHTML=`
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+        Se a máquina estiver ocupada ou indisponível na sua academia:
+      </div>
+      ${info.alternativas.map(a=>`<div class="alt-card"><div class="alt-name">🔄 ${a.nome}</div><div class="alt-reason">${a.motivo}</div></div>`).join('')}`;
+  }
+}
+
+document.getElementById('modalOverlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+loadState();
+render();
+</script>
+</body>
+</html>
